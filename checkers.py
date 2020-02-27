@@ -1,8 +1,7 @@
 from enum import Enum
 
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QMainWindow, QLabel, QGridLayout, QToolButton
-from PyQt5 import QtCore, QtGui
+from PyQt5 import QtGui
+from PyQt5.QtWidgets import QMainWindow
 
 from ui_checkers import Ui_checkers_board
 
@@ -87,6 +86,39 @@ class CheckersMain(QMainWindow, Ui_checkers_board):
             return
 
         print(pos[1], pos[2])
+
+    def check_king_empty(self, x: int, y: int):  # Damka yurishi mumkin bo'lgan yo'llar
+        arr_xod = []
+        for i in (-1, 1):
+            for j in (-1, 1):
+                for k in range(1, 8):
+                    if 0 <= x + i * k <= 7 and 0 <= y + j * k <= 7:
+                        if self.board[x + i * k][y + j * k] == Pieces.EMPTY:
+                            arr_xod.append([x + i * k, y + j * k])
+                        else:
+                            break
+                    else:
+                        break
+        return arr_xod
+
+    def check_king_enemy(self, x: int, y: int, enemy: Pieces):  # Olish mumkin bo'lgan yo'llar
+        arr_xod = []
+        for i in (-1, 1):
+            for j in (-1, 1):
+                for k in range(1, 8):
+                    if 0 <= x + i * k <= 7 and 0 <= y + j * k <= 7:  # Doskadan tashqariga chiqib ketmaslik uchun
+                        if self.board[x + i * k][y + j * k] == Pieces.EMPTY:  # Bo'sh joyni tashlab ketish
+                            continue
+                        if self.board[x + i * k][y + j * k] == enemy:  # Yo'lida raqib tosh bo'lsa
+                            for m in range(k+1, 8):
+                                if 0 <= x + i * m <= 7 and 0 <= y + j * m <= 7:  # Doskadan tashqariga chiqib ketmaslik uchun
+                                    if self.board[x + i * m][y + j * m] == Pieces.EMPTY:  # Raqib toshni olish imkoni bo'lsa
+                                        arr_xod.append([x + i * m, y + j * m])
+                                    else:
+                                        break
+                        else:
+                            break
+        return arr_xod
 
     def move(self, x1, y1, x2, y2):
         self.board[x2][y2] = self.board[x1][y1]
