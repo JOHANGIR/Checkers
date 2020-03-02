@@ -47,17 +47,6 @@ class CheckersMain(QMainWindow, Ui_checkers_board):
         self.icon_king_black.addPixmap(QtGui.QPixmap("images/king_black.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.images.append(self.icon_king_black)
 
-        # self.board = [
-        #     [Pieces.CLOSE, Pieces.EMPTY, Pieces.CLOSE, Pieces.EMPTY, Pieces.CLOSE, Pieces.EMPTY, Pieces.CLOSE, Pieces.KING_BLACK],
-        #     [Pieces.EMPTY, Pieces.CLOSE, Pieces.EMPTY, Pieces.CLOSE, Pieces.EMPTY, Pieces.CLOSE, Pieces.EMPTY, Pieces.CLOSE],
-        #     [Pieces.CLOSE, Pieces.EMPTY, Pieces.CLOSE, Pieces.EMPTY, Pieces.CLOSE, Pieces.BLACK, Pieces.CLOSE, Pieces.EMPTY],
-        #     [Pieces.EMPTY, Pieces.CLOSE, Pieces.EMPTY, Pieces.CLOSE, Pieces.EMPTY, Pieces.CLOSE, Pieces.EMPTY, Pieces.CLOSE],
-        #     [Pieces.CLOSE, Pieces.EMPTY, Pieces.CLOSE, Pieces.EMPTY, Pieces.CLOSE, Pieces.BLACK, Pieces.CLOSE, Pieces.BLACK],
-        #     [Pieces.EMPTY, Pieces.CLOSE, Pieces.EMPTY, Pieces.CLOSE, Pieces.WHITE, Pieces.CLOSE, Pieces.EMPTY, Pieces.CLOSE],
-        #     [Pieces.CLOSE, Pieces.EMPTY, Pieces.CLOSE, Pieces.BLACK, Pieces.CLOSE, Pieces.WHITE, Pieces.CLOSE, Pieces.EMPTY],
-        #     [Pieces.EMPTY, Pieces.CLOSE, Pieces.EMPTY, Pieces.CLOSE, Pieces.EMPTY, Pieces.CLOSE, Pieces.EMPTY, Pieces.CLOSE],
-        # ]
-
         for i in range(8):
             for j in range(8):
                 if self.board[i][j] == Pieces.CLOSE:
@@ -65,67 +54,9 @@ class CheckersMain(QMainWindow, Ui_checkers_board):
                 getattr(self, "tb_%s_%s" % (i, j)).clicked.connect(self.click_pieces_two)
 
         self.show_board()
-        print(self.check_all_enemy())
-
-    def click_pieces(self):
-        tb = self.sender()
-        # self.tb_5_6.setChecked()
-        pos = tb.objectName().split("_")
-        pos[1] = int(pos[1])
-        pos[2] = int(pos[2])
-        pieces = self.board[pos[1]][pos[2]]
-        if not self.xod and pieces == Pieces.EMPTY:  # Agar self.xod bo'sh bo'lsa
-            tb.setChecked(False)
-            return
-
-        if self.xod:  # Walking the selected stone
-            if self.sad and pos[1] == self.x and pos[2] == self.y:
-                self.xod.clear()
-                return
-            
-            if [pos[1], pos[2]] in self.xod:  # If you can walk
-                self.move(self.x, self.y, pos[1], pos[2])
-                self.show_board()
-                print(pos[1], pos[2])
-                self.xod.clear()
-                if not self.sad:  # Agar biror raqib tosh olingan bo'lsa
-                    # self.sad = True
-                    if 'KING' in str(pieces):
-                        print('KING')
-                        self.xod = self.check_king_enemy(pos[1], pos[2])
-                    else:
-                        print('PIECES')
-                        self.xod = self.check_enemy(pos[1], pos[2])
-                    print(self.xod)
-                    if self.xod:  # Agar yana tosh olish imkoni bo'lsa
-                        tb.setChecked(True)
-                        self.x = pos[1]
-                        self.y = pos[2]
-                        return
-            else:  # If it is not possible to walk
-                tb.setChecked(False)
-                return
-            tb.setChecked(False)
-            self.player = 'WHITE' if self.player == 'BLACK' else 'BLACK'
-            self.lb_player.setText(self.player)
-        else:  # The choice of stone
-            if self.player not in str(pieces):  # Cancel when a competitor is selected
-                tb.setChecked(False)
-                return
-            self.x = pos[1]
-            self.y = pos[2]
-            self.check_xod(pos[1], pos[2], pieces)
-            print('SAD = ', self.sad)
-
-            # If there is no walking path
-            if not self.xod:
-                tb.setChecked(False)
-
-        print(pos[1], pos[2])
 
     def click_pieces_two(self):
         tb = self.sender()
-        # self.tb_5_6.setChecked()
         pos = tb.objectName().split("_")
         pos[1] = int(pos[1])
         pos[2] = int(pos[2])
@@ -133,12 +64,7 @@ class CheckersMain(QMainWindow, Ui_checkers_board):
 # ----------------------------------------------------------------------------------
         if self.xod:  # Walking the selected stone
             if pos[1] == self.x and pos[2] == self.y:  # Agar qayta bossa
-                if not self.sad:
-                    print('AAAAAAAA', self.xod)
-                    self.xod.clear()
-                # self.sad = False
                 tb.setChecked(True)
-                print('Makaka')
                 return
 
             if [pos[1], pos[2]] in self.xod:  # If you can walk
@@ -151,7 +77,6 @@ class CheckersMain(QMainWindow, Ui_checkers_board):
                         self.xod = self.check_king_enemy(pos[1], pos[2])
                     else:
                         self.xod = self.check_enemy(pos[1], pos[2])
-                    print(self.xod)
                     if self.xod:  # Agar yana tosh olish imkoni bo'lsa
                         tb.setChecked(True)
                         self.x = pos[1]
@@ -205,29 +130,21 @@ class CheckersMain(QMainWindow, Ui_checkers_board):
             # If the opponent is able to eat the stone
             self.xod = self.check_king_enemy(x, y)
             if self.xod:
-                # self.sad = False
-                print('check_king_enemy', self.xod)
                 return
 
             # For a simple walk
             self.xod = self.check_king_empty(x, y)
             if self.xod:
-                # self.sad = True
-                print('check_king_empty', self.xod)
                 return
         else:
             # If the opponent is able to eat the stone
             self.xod = self.check_enemy(x, y)
             if self.xod:
-                # self.sad = False
-                print('check_enemy', self.xod)
                 return
 
             # For a simple walk
             self.xod = self.check_empty(x, y)
             if self.xod:
-                # self.sad = True
-                print('check_empty', self.xod)
                 return
 
     def check_king_empty(self, x: int, y: int):  # Damka yurishi mumkin bo'lgan yo'llar
@@ -294,12 +211,6 @@ class CheckersMain(QMainWindow, Ui_checkers_board):
                                 if self.board[x + 2 * i][y + 2 * j] == Pieces.EMPTY:  # Raqib toshni olish imkoni bo'lsa
                                     arr_xod.append([x + 2 * i, y + 2 * j])
         return arr_xod
-
-    def print_board(self):
-        for item in self.board:
-            for p in item:
-                print(p.value, end=' ')
-            print()
 
     def show_board(self):
         for i in range(8):
