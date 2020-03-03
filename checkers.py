@@ -63,7 +63,7 @@ class CheckersMain(QMainWindow, Ui_checkers_board):
         pieces = self.board[pos[1]][pos[2]]
 # ----------------------------------------------------------------------------------
         if self.xod:  # Walking the selected stone
-            if pos[1] == self.x and pos[2] == self.y:  # Agar qayta bossa
+            if pos[1] == self.x and pos[2] == self.y:  # If you click again
                 tb.setChecked(True)
                 return
 
@@ -71,13 +71,13 @@ class CheckersMain(QMainWindow, Ui_checkers_board):
                 self.move(self.x, self.y, pos[1], pos[2])
                 self.show_board()
                 self.xod.clear()
-                if not self.sad:  # Agar biror raqib tosh olingan bo'lsa
+                if not self.sad:  # If an opponent eats a stone
                     self.sad = True
                     if 'KING' in str(pieces):
                         self.xod = self.check_king_enemy(pos[1], pos[2])
                     else:
                         self.xod = self.check_enemy(pos[1], pos[2])
-                    if self.xod:  # Agar yana tosh olish imkoni bo'lsa
+                    if self.xod:  # If you eat more stones
                         tb.setChecked(True)
                         self.x = pos[1]
                         self.y = pos[2]
@@ -147,7 +147,7 @@ class CheckersMain(QMainWindow, Ui_checkers_board):
             if self.xod:
                 return
 
-    def check_king_empty(self, x: int, y: int):  # Damka yurishi mumkin bo'lgan yo'llar
+    def check_king_empty(self, x: int, y: int):  # Roads that the KING may walk
         arr_xod = []
         for i in (-1, 1):
             for j in (-1, 1):
@@ -161,18 +161,18 @@ class CheckersMain(QMainWindow, Ui_checkers_board):
                         break
         return arr_xod
 
-    def check_king_enemy(self, x: int, y: int):  # Olish mumkin bo'lgan yo'llar
+    def check_king_enemy(self, x: int, y: int):  # Roads the KING can eat
         arr_xod = []
         for i in (-1, 1):
             for j in (-1, 1):
                 for k in range(1, 8):
-                    if 0 <= x + i * k <= 7 and 0 <= y + j * k <= 7:  # Doskadan tashqariga chiqib ketmaslik uchun
-                        if self.board[x + i * k][y + j * k] == Pieces.EMPTY:  # Bo'sh joyni tashlab ketish
+                    if 0 <= x + i * k <= 7 and 0 <= y + j * k <= 7:  # Not to get out of the board
+                        if self.board[x + i * k][y + j * k] == Pieces.EMPTY:  # Skip empty places
                             continue
-                        if self.player not in str(self.board[x + i * k][y + j * k]):  # Yo'lida raqib tosh bo'lsa
+                        if self.player not in str(self.board[x + i * k][y + j * k]):  # If there is an enemy stone in the path
                             for m in range(k+1, 8):
-                                if 0 <= x + i * m <= 7 and 0 <= y + j * m <= 7:  # Doskadan tashqariga chiqib ketmaslik uchun
-                                    if self.board[x + i * m][y + j * m] == Pieces.EMPTY:  # Raqib toshni olish imkoni bo'lsa
+                                if 0 <= x + i * m <= 7 and 0 <= y + j * m <= 7:  # Not to get out of the board
+                                    if self.board[x + i * m][y + j * m] == Pieces.EMPTY:  # If you can get an opponent’s stone
                                         arr_xod.append([x + i * m, y + j * m])
                                     else:
                                         break
@@ -183,7 +183,7 @@ class CheckersMain(QMainWindow, Ui_checkers_board):
     def move(self, x1, y1, x2, y2):
         self.board[x2][y2] = self.board[x1][y1]
         self.board[x1][y1] = Pieces.EMPTY
-        if abs(x1 - x2) >= 2:  # Dushman tosh urib olinsa
+        if abs(x1 - x2) >= 2:  # If the enemy stone is eaten
             k = (x2 - x1) // (y2 - y1)  # y=kx+b
             b = y1 - k * x1
             for x in range(x1, x2, (x2-x1) // abs(x1 - x2)):
@@ -191,7 +191,7 @@ class CheckersMain(QMainWindow, Ui_checkers_board):
                     self.sad = False
                 self.board[x][k * x + b] = Pieces.EMPTY
 
-    def check_empty(self, x: int, y: int):  # Yurish mumkin bo'lgan yo'llar
+    def check_empty(self, x: int, y: int):  # Allowed paths
         arr_xod = []
         i = -1 if self.player == 'WHITE' else 1
         for j in (-1, 1):
@@ -200,15 +200,15 @@ class CheckersMain(QMainWindow, Ui_checkers_board):
                     arr_xod.append([x + i, y + j])
         return arr_xod
 
-    def check_enemy(self, x: int, y: int):  # Olish mumkin bo'lgan toshlar
+    def check_enemy(self, x: int, y: int):  # Stones that can be eaten
         arr_xod = []
         for i in (-1, 1):
             for j in (-1, 1):
-                if 0 <= x + i <= 7 and 0 <= y + j <= 7:  # Doskadan tashqariga chiqib ketmaslik uchun
-                    if self.board[x + i][y + j] != Pieces.EMPTY:  # Bosh bo'lmasa
-                        if self.player not in str(self.board[x + i][y + j]):  # Raqib tosh yonida bo'lsa
-                            if 0 <= x + 2 * i <= 7 and 0 <= y + 2 * j <= 7:  # Doskadan tashqariga chiqib ketmaslik uchun
-                                if self.board[x + 2 * i][y + 2 * j] == Pieces.EMPTY:  # Raqib toshni olish imkoni bo'lsa
+                if 0 <= x + i <= 7 and 0 <= y + j <= 7:  # Not to get out of the board
+                    if self.board[x + i][y + j] != Pieces.EMPTY:  # Skip empty places
+                        if self.player not in str(self.board[x + i][y + j]):  # If nearby enemy stones
+                            if 0 <= x + 2 * i <= 7 and 0 <= y + 2 * j <= 7:  # Not to get out of the board
+                                if self.board[x + 2 * i][y + 2 * j] == Pieces.EMPTY:  # If you can get an opponent’s stone
                                     arr_xod.append([x + 2 * i, y + 2 * j])
         return arr_xod
 
